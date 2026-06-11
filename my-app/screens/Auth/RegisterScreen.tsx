@@ -5,30 +5,67 @@ import {useRouter} from "expo-router";
 import {authService} from "@/service/AuthService";
 import {useState} from "react";
 import {useAppDispatch} from "@/hooks/redux";
-import ILoginModel from "@/models/ILoginModel";
+import IRegisterModel from "@/models/IRegisterModel";
 import {loginSuccess} from "@/store/reducers/AuthSlice";
 import * as SecureStore from 'expo-secure-store';
+import * as ImagePicker from "expo-image-picker"
 import {LinearGradient} from "expo-linear-gradient";
+import {ImagePickerButton} from "@/components/form/ImagePickerButton";
 import AuthTab from "@/components/auth/AuthTab";
+import {serialize} from "object-to-formdata";
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
 
-    const {control, handleSubmit} = useForm<ILoginModel>();
-    const [login, { isLoading }] = authService.useLoginMutation();
+    const {control, handleSubmit} = useForm<IRegisterModel>();
+    const [register, { isLoading }] = authService.useRegisterMutation();
     const [serverError, setServerError] = useState<string | null>(null);
     const dispatch = useAppDispatch();
     const router = useRouter();
 
-    const onSubmit = async (data: ILoginModel) => {
-        console.log("Form data:", data);
+    const pickImage = async () => {
+        // console.log("Pick image");
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+            alert("Доступ до галереї потрібен для вибору фото.");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        // if (!result.canceled) {
+        //     setForm((prev) => ({
+        //         ...prev,
+        //         imageFile: {
+        //             uri: result.assets[0].uri,
+        //             name: "avatar.jpg",
+        //             type: "image/jpeg",
+        //         },
+        //     }));
+        // }
+
+    }
+
+    const onSubmit = async (data: IRegisterModel) => {
+        const name = data.firstName.trim().split(" ");
+
+        const sendData = {
+            firstName: name[0],
+            lastName: name.slice(1).join(" ") || "",
+            email: data.email,
+            password: data.password,
+            imageFile: data.imageFile,
+        };
+
         try{
-            const result = await login(data).unwrap();
+            const result = await register(sendData).unwrap();
 
             if (result.token) {
-                console.log(result.token);
-                dispatch(loginSuccess(result.token));
-                await SecureStore.setItemAsync('accessToken',  result.token);
-                router.push("/explore");
+                router.push("/login");
             }
         }
         catch(error: any){
@@ -56,13 +93,15 @@ export default function LoginScreen() {
                 end={{ x: 1.5, y: 0 }}
                 className="flex-1"
             >
+
                 <View className="flex-row items-center justify-end flex-1 gap-3">
-                    <Text className={"color-gray-300 mb-16"}>Dont have an account?</Text>
-                    <AuthTab label={"Get Started"} onPress={() => router.replace("/register")} className={"p-3 rounded-xl items-center bg-white/20 mb-16 me-4 cursor-pointer"}/>
+                    <Text className={"color-gray-300 mb-2"}>Already have an account?</Text>
+                    <AuthTab label={"Sign in"} onPress={() => router.replace("/login")} className={"p-3 rounded-xl items-center bg-white/20 mb-2 me-4 cursor-pointer"} />
                 </View>
-                <View className="w-full h-2/3 bg-white p-6 rounded-t-3xl items-center">
+
+                <View className="w-full h-3/2 bg-white p-6 rounded-t-3xl items-center">
                     <Text className="text-3xl m-3 font-bold">
-                        Welcome back
+                        Get started
                     </Text>
                     <Text className="text-1xl color-gray-400 m-3">
                         Enter your details below
@@ -70,6 +109,28 @@ export default function LoginScreen() {
 
 
                     <View>
+
+                        <View className={"items-center my-8"}>
+                            <ImagePickerButton
+                                imageUri = {null}
+                                onPress = {pickImage}
+                            />
+                            <Text className="text-zinc-400 dark:text-zinc-500 mt-2">
+                                Click to choose a photo
+                            </Text>
+                        </View>
+
+                        <Controller control={control}
+                                    name = "firstName"
+                                    rules={{ required: "FullName is required" }}
+                                    render={({ field: { onChange, value } }) => (
+                                        <TextInput
+                                            placeholder="FullName"
+                                            value={value}
+                                            onChangeText={onChange}
+                                            className={"border border-neutral-300 rounded-xl w-96 p-5 color-black mt-3"}
+                                        />
+                                    )}/>
 
                         <Controller control={control}
                                     name = "email"
@@ -111,7 +172,7 @@ export default function LoginScreen() {
                                 }}
                             >
                                 <Text className="text-white font-semibold text-lg">
-                                    Sign in
+                                    Sign up
                                 </Text>
                             </LinearGradient>
                         </Pressable>
