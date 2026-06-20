@@ -5,7 +5,7 @@ import {useRouter} from "expo-router";
 import {authService} from "@/service/AuthService";
 import {useState} from "react";
 import {useAppDispatch} from "@/hooks/redux";
-import IRegisterModel from "@/models/IRegisterModel";
+import IRegisterModel from "@/models/User/IRegisterModel";
 import {loginSuccess} from "@/store/reducers/AuthSlice";
 import * as SecureStore from 'expo-secure-store';
 import * as ImagePicker from "expo-image-picker"
@@ -16,10 +16,11 @@ import {serialize} from "object-to-formdata";
 
 export default function RegisterScreen() {
 
-    const {control, handleSubmit} = useForm<IRegisterModel>();
+    const {control, setValue, watch, handleSubmit} = useForm<IRegisterModel>();
     const [register, { isLoading }] = authService.useRegisterMutation();
     const [serverError, setServerError] = useState<string | null>(null);
     const dispatch = useAppDispatch();
+    const image = watch("imageFile");
     const router = useRouter();
 
     const pickImage = async () => {
@@ -37,16 +38,15 @@ export default function RegisterScreen() {
             quality: 1,
         });
 
-        // if (!result.canceled) {
-        //     setForm((prev) => ({
-        //         ...prev,
-        //         imageFile: {
-        //             uri: result.assets[0].uri,
-        //             name: "avatar.jpg",
-        //             type: "image/jpeg",
-        //         },
-        //     }));
-        // }
+        if (!result.canceled) {
+            const asset = result.assets[0];
+
+            setValue("imageFile", {
+                uri: asset.uri,
+                name: "avatar.jpg",
+                type: "image/jpeg",
+            });
+        }
 
     }
 
@@ -99,7 +99,7 @@ export default function RegisterScreen() {
                     <AuthTab label={"Sign in"} onPress={() => router.replace("/login")} className={"p-3 rounded-xl items-center bg-white/20 mb-2 me-4 cursor-pointer"} />
                 </View>
 
-                <View className="w-full h-3/2 bg-white p-6 rounded-t-3xl items-center">
+                <View className="wSS-full h-3/2 bg-white p-6 rounded-t-3xl items-center">
                     <Text className="text-3xl m-3 font-bold">
                         Get started
                     </Text>
@@ -112,7 +112,7 @@ export default function RegisterScreen() {
 
                         <View className={"items-center my-8"}>
                             <ImagePickerButton
-                                imageUri = {null}
+                                imageUri = {image?.uri ?? null}
                                 onPress = {pickImage}
                             />
                             <Text className="text-zinc-400 dark:text-zinc-500 mt-2">

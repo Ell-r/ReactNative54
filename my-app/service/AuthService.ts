@@ -1,25 +1,29 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
 import {fetchBaseQuery} from "@reduxjs/toolkit/query";
 import { BASE_URL } from "@/api";
-import type IRegisterModel from "../models/IRegisterModel.ts";
-import type ILoginModel from "../models/ILoginModel.ts";
+// import {serialize} from "object-to-formdata";
+import type IRegisterModel from "../models/User/IRegisterModel.ts";
+import type ILoginModel from "../models/User/ILoginModel.ts";
 import {serialize} from "object-to-formdata";
-
+import IAccountModel from "@/models/User/IAccountModel";
+import * as SecureStore from "expo-secure-store";
 
 export const authService = createApi({
     reducerPath: 'authApi',
     baseQuery: fetchBaseQuery({
         baseUrl: `${BASE_URL}/Account/`,
-        prepareHeaders: (headers) => {
+        prepareHeaders: async  (headers) => {
+            const token = await SecureStore.getItemAsync("accessToken");
             headers.set('Content-Type', 'application/json');
+            if (token) {
+                headers.set("Authorization", `Bearer ${token}`);
+            }
             return headers;
         },
     }),
     tagTypes: ['Auth'],
     endpoints: (build) => ({
-        register: build.mutation<{
-            token: string;
-        }, IRegisterModel>({
+        register: build.mutation<{token : string}, IRegisterModel>({
             query: (model)=>{
                 const formData = serialize(model)
                 return {
@@ -39,9 +43,20 @@ export const authService = createApi({
                     body: model,
                 }
             }
+        }),
+        account: build.query<IAccountModel, void>({
+            query: () => {
+                return {
+                    url: "Me",
+                    method: "GET",
+                }
+            }
         })
-
     })
 })
 
-export const { useRegisterMutation, useLoginMutation } = authService;
+export const {
+    useRegisterMutation,
+    useLoginMutation,
+    useAccountQuery,
+} = authService;

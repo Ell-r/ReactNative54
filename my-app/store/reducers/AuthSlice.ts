@@ -1,6 +1,6 @@
 import {createSlice, type PayloadAction} from "@reduxjs/toolkit";
 import { jwtDecode } from "jwt-decode";
-import type IUser from "../../models/IUser.ts";
+import type IUser from "../../models/User/IUser.ts";
 // Import your API service
 
 const getUserFromToken = (token: string): IUser | null => {
@@ -31,12 +31,13 @@ const authSlice = createSlice({
             const user = getUserFromToken(action.payload);
             if (user) {
                 state.user = user;
-                // localStorage.setItem('token', action.payload);
+                //localStorage.setItem('token', action.payload);
             }
         },
         logout: (state) => {
             state.user = null;
-            // localStorage.removeItem('token');
+            //localStorage.removeItem('token');
+
         },
     }
 });

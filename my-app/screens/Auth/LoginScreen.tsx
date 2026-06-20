@@ -5,7 +5,7 @@ import {useRouter} from "expo-router";
 import {authService} from "@/service/AuthService";
 import {useState} from "react";
 import {useAppDispatch} from "@/hooks/redux";
-import ILoginModel from "@/models/ILoginModel";
+import ILoginModel from "@/models/User/ILoginModel";
 import {loginSuccess} from "@/store/reducers/AuthSlice";
 import * as SecureStore from 'expo-secure-store';
 import {LinearGradient} from "expo-linear-gradient";

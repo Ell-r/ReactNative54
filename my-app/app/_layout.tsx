@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import {router, Stack} from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import '../global.css';
@@ -32,6 +32,7 @@ export default function RootLayout() {
         const accessToken  = await SecureStore.getItemAsync('accessToken');
         if (accessToken) {
             store.dispatch(loginSuccess(accessToken));
+            router.replace("/(tabs)");
         }
     }
 
