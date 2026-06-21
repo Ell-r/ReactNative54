@@ -1,8 +1,3 @@
-const HomeScreen = () =>{
-    return(
-        <>
-        </>
-    )
-}
+import ChatScreen from "@/screens/Chat/ChatScreen";
 
-export default HomeScreen;
+export default ChatScreen;
