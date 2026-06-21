@@ -1,3 +1,8 @@
-import ProfileScreen from "@/screens/Account/ProfileScreen";
+const HomeScreen = () =>{
+    return(
+        <>
+        </>
+    )
+}
 
-export default ProfileScreen;
+export default HomeScreen;

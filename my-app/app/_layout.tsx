@@ -32,7 +32,7 @@ export default function RootLayout() {
         const accessToken  = await SecureStore.getItemAsync('accessToken');
         if (accessToken) {
             store.dispatch(loginSuccess(accessToken));
-            router.replace("/(tabs)");
+            //router.replace("/profile");
         }
     }
 
