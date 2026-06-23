@@ -4,13 +4,9 @@ export const BASE_URL = isDevelopment
     ? process.env.EXPO_PUBLIC_API_URL_DEV
     : process.env.EXPO_PUBLIC_API_URL_PROD;
 
-const url = process.env.EXPO_PUBLIC_HUB_URL_DEV;
-
-if (!url) {
-    throw new Error("Warning: HUB_URL is undefined. Check your .env configuration.");
-}
-
-export const HUB_URL : string = url;
+export const BASE_URL_API = `${BASE_URL}/api`;
+export const BASE_URL_IMAGES = `${BASE_URL}/images`;
+export const BASE_URL_HUB = `${BASE_URL}/chat`;
 
 if (!BASE_URL) {
     console.warn("Warning: BASE_URL is undefined. Check your .env configuration.");

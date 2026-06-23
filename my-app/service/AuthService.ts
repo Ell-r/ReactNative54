@@ -1,6 +1,6 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
 import {fetchBaseQuery} from "@reduxjs/toolkit/query";
-import { BASE_URL } from "@/api";
+import {BASE_URL_API} from "@/api";
 // import {serialize} from "object-to-formdata";
 import type IRegisterModel from "../models/User/IRegisterModel.ts";
 import type ILoginModel from "../models/User/ILoginModel.ts";
@@ -12,7 +12,7 @@ import {IEditProfileModel} from "@/models/User/IEditProfileModel";
 export const authService = createApi({
     reducerPath: 'authApi',
     baseQuery: fetchBaseQuery({
-        baseUrl: `${BASE_URL}/Account/`,
+        baseUrl: `${BASE_URL_API}/Account/`,
         prepareHeaders: async  (headers) => {
             const token = await SecureStore.getItemAsync("accessToken");
             headers.set('Content-Type', 'application/json');
@@ -51,7 +51,8 @@ export const authService = createApi({
                     url: "Me",
                     method: "GET",
                 }
-            }
+            },
+            providesTags: ["Auth"]
         }),
         editProfile: build.mutation<{token : string}, IEditProfileModel>({
             query: (model) => {
@@ -61,7 +62,8 @@ export const authService = createApi({
                     method: "PUT",
                     body: formData,
                 }
-            }
+            },
+            invalidatesTags: ["Auth"],
         })
     })
 })

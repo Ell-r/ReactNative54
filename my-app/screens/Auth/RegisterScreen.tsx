@@ -17,14 +17,12 @@ import {serialize} from "object-to-formdata";
 export default function RegisterScreen() {
 
     const {control, setValue, watch, handleSubmit} = useForm<IRegisterModel>();
-    const [register, { isLoading }] = authService.useRegisterMutation();
+    const [register] = authService.useRegisterMutation();
     const [serverError, setServerError] = useState<string | null>(null);
-    const dispatch = useAppDispatch();
     const image = watch("imageFile");
     const router = useRouter();
 
     const pickImage = async () => {
-        // console.log("Pick image");
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!permissionResult.granted) {
             alert("Доступ до галереї потрібен для вибору фото.");

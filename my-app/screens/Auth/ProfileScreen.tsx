@@ -1,14 +1,17 @@
 import {View, Text, TextInput, Pressable, StyleSheet, Image, ActivityIndicator} from "react-native";
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import {useAppSelector} from "@/store";
-import {useAccountQuery} from "@/service/AuthService";
+import {useAccountQuery, useEditProfileMutation} from "@/service/AuthService";
 import {Redirect, router} from "expo-router";
 import {ThemedView} from "@/components/themed-view";
-import {logout} from "@/store/reducers/AuthSlice";
+import {loginSuccess, logout} from "@/store/reducers/AuthSlice";
 import {LinearGradient} from "expo-linear-gradient";
 import {useAppDispatch} from "@/hooks/redux";
 import {Ionicons} from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import * as SecureStore from "expo-secure-store";
+import {BASE_URL_IMAGES} from "@/api";
 
 
 const ProfileScreen = () => {
@@ -16,6 +19,13 @@ const ProfileScreen = () => {
     const auth = useAppSelector(x => x.auth);
     const {data: account, isLoading, isError, refetch} = useAccountQuery();
     const dispatch = useAppDispatch();
+    const [editProfile] = useEditProfileMutation();
+
+    /*useEffect(() => {
+        if (!account) {
+            router.replace("/login");
+        }
+    }, [account]);*/
 
     if (auth == null){
         return <Redirect href="/login" />;
@@ -26,7 +36,8 @@ const ProfileScreen = () => {
         //console.log(auth);
     }
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        await SecureStore.deleteItemAsync("accessToken");
         dispatch(logout());
         router.replace("/login");
     }
@@ -35,10 +46,63 @@ const ProfileScreen = () => {
         router.push("/profile/edit");
     }
 
-    const handleSetPhoto = () =>{
-        //router.push("/profile/setPhoto");
-        console.log("Setting photo");
+    const handleSetPhoto = async () =>{
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+            alert("Доступ до галереї потрібен для вибору фото.");
+            return;
+        }
+
+        console.log(`${BASE_URL_IMAGES}/1200_${account?.image}`);
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            const asset = result.assets[0];
+
+            const newImageFile = {
+                uri: asset.uri,
+                name: "avatar.jpg",
+                type: "image/jpeg",
+            }
+
+            try{
+
+                const name = account?.fullName?.trim().split(" ") ?? [];
+                console.log("name", name[0]);
+
+                const sendData = {
+                    firstName: name[0] || " ",
+                    lastName: name.slice(1).join(" ") || " ",
+                    email: account.email,
+                    imageFile: newImageFile
+                }
+
+                const result = await editProfile(sendData).unwrap();
+
+                if (result.token){
+                    console.log(result.token);
+                    dispatch(loginSuccess(result.token));
+                    await SecureStore.setItemAsync('accessToken',  result.token);
+                    await refetch();
+                }
+            }
+            catch(error: any){
+                console.error("Error: ", error);
+
+                if (error?.data) {
+                    console.log(error.data);
+                }
+            }
+
+        }
     }
+
 
     return(
         <>
@@ -89,18 +153,21 @@ const ProfileScreen = () => {
                 <ParallaxScrollView
                     headerBackgroundColor={{ light: '#cccdf8', dark: '#3127e8' }}
                     headerImage={
-                        <View style={{
-                            position: "absolute",
-                            bottom: 20,
-                            left: 20,
-                        }}>
+                        <View style={{ flex: 1 }}>
                             <Image
-                                source={{ uri: account?.image }}
+                                source={{ uri: `${BASE_URL_IMAGES}/1200_${account?.image}` }}
                                 style={styles.profileImage}
                             />
 
-                            <Text className={"text-3xl font-bold text-white"}>{account?.fullName}</Text>
-                            <Text className={"text-gray-400"}>{account?.email}</Text>
+                            <View style={{
+                                position: "absolute",
+                                bottom: 20,
+                                left: 20,
+                            }}>
+                                <Text className={"font-bold color-white text-3xl"}>{account?.fullName}</Text>
+
+                                <Text className={"text-gray-400"}>{account?.email}</Text>
+                            </View>
                         </View>
                     }>
 
@@ -178,7 +245,7 @@ const ProfileScreen = () => {
 
 const styles = StyleSheet.create({
     profileImage: {
-        height: 230,
+        height: '100%',
         width: '100%',
         position: 'absolute',
         bottom: 0,
