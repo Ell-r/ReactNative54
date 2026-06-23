@@ -7,6 +7,7 @@ import type ILoginModel from "../models/User/ILoginModel.ts";
 import {serialize} from "object-to-formdata";
 import IAccountModel from "@/models/User/IAccountModel";
 import * as SecureStore from "expo-secure-store";
+import {IEditProfileModel} from "@/models/User/IEditProfileModel";
 
 export const authService = createApi({
     reducerPath: 'authApi',
@@ -51,6 +52,16 @@ export const authService = createApi({
                     method: "GET",
                 }
             }
+        }),
+        editProfile: build.mutation<{token : string}, IEditProfileModel>({
+            query: (model) => {
+                const formData = serialize(model)
+                return {
+                    url: "EditProfile",
+                    method: "PUT",
+                    body: formData,
+                }
+            }
         })
     })
 })
@@ -59,4 +70,5 @@ export const {
     useRegisterMutation,
     useLoginMutation,
     useAccountQuery,
+    useEditProfileMutation,
 } = authService;

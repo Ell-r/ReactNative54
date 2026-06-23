@@ -1,16 +1,14 @@
 import {View, Text, TextInput, Pressable, StyleSheet, Image, ActivityIndicator} from "react-native";
-import {useEffect} from "react";
+import React, {useEffect} from "react";
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import {useAppSelector} from "@/store";
 import {useAccountQuery} from "@/service/AuthService";
 import {Redirect, router} from "expo-router";
-import {inspect} from "node:util";
 import {ThemedView} from "@/components/themed-view";
-import {ThemedText} from "@/components/themed-text";
-import {Controller} from "react-hook-form";
 import {logout} from "@/store/reducers/AuthSlice";
 import {LinearGradient} from "expo-linear-gradient";
 import {useAppDispatch} from "@/hooks/redux";
+import {Ionicons} from "@expo/vector-icons";
 
 
 const ProfileScreen = () => {
@@ -25,12 +23,21 @@ const ProfileScreen = () => {
 
     const handleUpdate = async () =>{
         await refetch();
-        console.log(auth);
+        //console.log(auth);
     }
 
     const handleLogout = () => {
         dispatch(logout());
         router.replace("/login");
+    }
+
+    const handleEditInfo = () =>{
+        router.push("/profile/edit");
+    }
+
+    const handleSetPhoto = () =>{
+        //router.push("/profile/setPhoto");
+        console.log("Setting photo");
     }
 
     return(
@@ -96,6 +103,52 @@ const ProfileScreen = () => {
                             <Text className={"text-gray-400"}>{account?.email}</Text>
                         </View>
                     }>
+
+                    <View className="flex flex-row gap-2">
+                        <Pressable
+                            onPress={() => handleSetPhoto()}
+                            style={{ width: "49%" }}
+                            className="mt-2 w-75 rounded-xl overflow-hidden"
+                        >
+                            <LinearGradient
+                                colors={['#8276f8', '#8276f8']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={{
+                                    paddingVertical: 12,
+                                    borderRadius: 16,
+                                    alignItems: "center",
+                                }}
+                            >
+                                <Ionicons name={"camera"} size={24} color={'white'} />
+                                <Text className="text-white font-semibold">
+                                    Set Photo
+                                </Text>
+                            </LinearGradient>
+                        </Pressable>
+
+                        <Pressable
+                            onPress={() => handleEditInfo()}
+                            style={{ width: "49%" }}
+                            className="mt-2 w-75 rounded-xl overflow-hidden"
+                        >
+                            <LinearGradient
+                                colors={['#8276f8', '#8276f8']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={{
+                                    paddingVertical: 12,
+                                    borderRadius: 16,
+                                    alignItems: "center",
+                                }}
+                            >
+                                <Ionicons name="create-outline" size={24} color="white" />
+                                <Text className="text-white font-semibold">
+                                    Edit info
+                                </Text>
+                            </LinearGradient>
+                        </Pressable>
+                    </View>
 
                     <Pressable onPress={() => handleLogout()}>
                         <LinearGradient
